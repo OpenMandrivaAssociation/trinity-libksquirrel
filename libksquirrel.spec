@@ -1,10 +1,10 @@
-%if 0%{?fedora} >= 23 || 0%{?rhel} >= 8
-%define _hardened_ldflags %nil
-%endif
-
-#
-# Please submit bugfixes or comments via http://www.trinitydesktop.org/
-#
+%bcond clang 1
+%bcond ghostscript 1
+%bcond djvu 1
+%bcond xmedcon 0
+%bcond svg 1
+%bcond jasper 1
+%bcond freetype 1
 
 # BUILD WARNING:
 #  Remove qt-devel and qt3-devel and any kde*-devel on your system !
@@ -15,6 +15,8 @@
 %if "%{?tde_version}" == ""
 %define tde_version 14.1.5
 %endif
+%define pkg_rel 2
+
 %define tde_pkg libksquirrel
 %define tde_prefix /opt/trinity
 %define tde_bindir %{tde_prefix}/bin
@@ -28,32 +30,25 @@
 %define tde_tdeincludedir %{tde_includedir}/tde
 %define tde_tdelibdir %{tde_libdir}/trinity
 
-%if 0%{?mdkversion}
 %undefine __brp_remove_la_files
 %define dont_remove_libtool_files 1
 %define _disable_rebuild_configure 1
-%endif
 
 # fixes error: Empty %files file …/debugsourcefiles.list
 %define _debugsource_template %{nil}
 
 %define tarball_name %{tde_pkg}-trinity
-%global toolchain %(readlink /usr/bin/cc)
 
 
 Name:		trinity-%{tde_pkg}
 Epoch:		%{tde_epoch}
 Version:	0.8.0
-Release:	%{?tde_version}_%{?!preversion:1}%{?preversion:0_%{preversion}}%{?dist}
+Release:	%{?tde_version}_%{?!preversion:%{pkg_rel}}%{?preversion:0_%{preversion}}%{?dist}
 Summary:	Trinity image viewer
 Group:		System/Libraries
 URL:		http://www.trinitydesktop.org/
 
-%if 0%{?suse_version}
-License:	GPL-2.0+
-%else
 License:	GPLv2+
-%endif
 
 #Vendor:		Trinity Desktop
 #Packager:	Francois Andriot <francois.andriot@free.fr>
@@ -63,30 +58,37 @@ Prefix:			%{tde_prefix}
 Source0:	https://mirror.ppa.trinitydesktop.org/trinity/releases/R%{tde_version}/main/libraries/%{tarball_name}-%{tde_version}%{?preversion:~%{preversion}}.tar.xz
 Source1:	%{name}-rpmlintrc
 
-BuildRequires:  cmake make
+BuildSystem:    cmake
+BuildOption:    -DCMAKE_BUILD_TYPE="RelWithDebInfo"
+BuildOption:    -DCMAKE_SKIP_RPATH=OFF
+BuildOption:    -DCMAKE_SKIP_INSTALL_RPATH=OFF
+BuildOption:    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
+BuildOption:    -DCMAKE_INSTALL_RPATH="%{tde_libdir}"
+BuildOption:    -DCMAKE_INSTALL_PREFIX="%{tde_prefix}"
+BuildOption:    -DSHARE_INSTALL_PREFIX="%{tde_datadir}"
+BuildOption:    -DINCLUDE_INSTALL_DIR="%{tde_includedir}"
+BuildOption:    -DLIB_INSTALL_DIR="%{tde_libdir}"
+BuildOption:    -DWITH_ALL_OPTIONS=ON -DBUILD_ALL=ON -DBUILD_DICOM=OFF
+BuildOption:    -DBUILD_PICT=OFFBuildOption:    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
+
+
 BuildRequires:	trinity-tdelibs-devel >= %{tde_version}
 
 BuildRequires:	desktop-file-utils
-%if "%{?toolchain}" != "clang"
-BuildRequires:	gcc-c++
-%endif
+
+%{!?with_clang:BuildRequires:	gcc-c++}
+
 BuildRequires:	pkgconfig
 
-# CMAKE
-BuildRequires: cmake libtool
-%if 0%{?mgaversion} || 0%{?mdkversion}
+# libtool, I guess...
+BuildRequires: libtool
 BuildRequires:	%{_lib}ltdl-devel
-%endif
-%if 0%{?fedora} || 0%{?rhel} >= 5 || 0%{?suse_version} >= 1220
-BuildRequires:	libtool-ltdl-devel
-%endif
 
 # TRANSFIG support
 BuildRequires:	transfig
 
 # GHOSTSCRIPT support
-%define with_ghostscript 1
-BuildRequires:	ghostscript
+%{?with_ghostscript:BuildRequires:	ghostscript}
 
 # GETTEXT support
 BuildRequires:	gettext
@@ -102,49 +104,28 @@ BuildRequires:  pkgconfig(OpenEXR)
 BuildRequires:  pkgconfig(libtiff-4)
 
 # GIF support
-%if 0%{?suse_version} || 0%{?fedora} >= 28 || 0%{?rhel} >= 8
-BuildRequires: giflib-devel
-%else
-%if 0%{?mdkver}
 BuildRequires: %{_lib}gif-devel
-%else
-BuildRequires: libungif-devel
-%endif
-%endif
 
 # MNG support
 BuildRequires:  pkgconfig(libmng)
 
 # DJVU support
-%if 0%{?fedora} || 0%{?rhel} >= 6 || 0%{?mgaversion} || 0%{?mdkversion} || 0%{?suse_version}
-%define with_djvu 1
-BuildRequires:	djvulibre
-%endif
+%{?with_djvu:BuildRequires:	djvulibre}
 
 # XMEDCON support
-#if 0%{?fedora}
-#define with_xmedcon 1
-#BuildRequires:	xmedcon
-#BuildRequires:	xmedcon-devel
-#endif
+%if %{with xmedcon}
+BuildRequires:	xmedcon
+BuildRequires:	xmedcon-devel
+%endif
 
 # RSVG support
-%if 0%{?rhel} >=5 || 0%{?fedora} || 0%{?mgaversion} || 0%{?mdkversion} || 0%{?suse_version}
-%define with_svg 1
-BuildRequires:  librsvg
-%endif
+%{?with_svg:BuildRequires:  librsvg}
 
 # JASPER support
-%if 0%{?rhel} >=4 || 0%{?fedora} || 0%{?mgaversion} || 0%{?mdkversion} || 0%{?suse_version}
-%define with_jasper 1
-BuildRequires:  pkgconfig(jasper)
-%endif
+%{?with_jasper:BuildRequires:  pkgconfig(jasper)}
 
 # FREETYPE support
-%if 0%{?rhel} >=5 || 0%{?fedora} || 0%{?mgaversion} || 0%{?mdkversion} || 0%{?suse_version}
-%define with_freetype 1
-BuildRequires:  pkgconfig(freetype2)
-%endif
+%{?with_freetype:BuildRequires:  pkgconfig(freetype2)}
 
 # WMF support
 BuildRequires:  pkgconfig(libwmf)
@@ -153,11 +134,7 @@ BuildRequires:  pkgconfig(libwmf)
 BuildRequires:	pkgconfig(libxml-2.0)
 
 # NETPBM support
-%if 0%{?mgaversion} || 0%{?mdkversion} || 0%{?suse_version}
 BuildRequires:	netpbm
-%else
-BuildRequires:	netpbm-progs
-%endif
 
 BuildRequires:  x11-proto-devel
 
@@ -178,15 +155,15 @@ This package contains the runtime libraries for KSquirrel.
 %{tde_libdir}/ksquirrel-libs/libkls_cut.so.0.8.0
 %{tde_libdir}/ksquirrel-libs/libkls_dds.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_dds.so.0.8.0
-%if 0%{?with_xmedcon}
+%if %{with xmedcon}
 %{tde_libdir}/ksquirrel-libs/libkls_dicom.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_dicom.so.0.8.0
 %endif
-%if 0%{?with_djvu}
+%if %{with djvu}
 %{tde_libdir}/ksquirrel-libs/libkls_djvu.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_djvu.so.0.8.0
 %endif
-%if 0%{?with_ghostscript}
+%if %{with ghostscript}
 %{tde_libdir}/ksquirrel-libs/libkls_eps.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_eps.so.0.8.0
 %endif
@@ -236,6 +213,8 @@ This package contains the runtime libraries for KSquirrel.
 %{tde_libdir}/ksquirrel-libs/libkls_pi1.so.0.8.0
 %{tde_libdir}/ksquirrel-libs/libkls_pi3.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_pi3.so.0.8.0
+%{tde_libdir}/ksquirrel-libs/libkls_pict.so.0
+%{tde_libdir}/ksquirrel-libs/libkls_pict.so.0.8.0
 %{tde_libdir}/ksquirrel-libs/libkls_pix.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_pix.so.0.8.0
 %{tde_libdir}/ksquirrel-libs/libkls_png.so.0
@@ -258,7 +237,7 @@ This package contains the runtime libraries for KSquirrel.
 %{tde_libdir}/ksquirrel-libs/libkls_sgi.so.0.8.0
 %{tde_libdir}/ksquirrel-libs/libkls_sun.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_sun.so.0.8.0
-%if 0%{?with_svg}
+%if %{with svg}
 %{tde_libdir}/ksquirrel-libs/libkls_svg.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_svg.so.0.8.0
 %endif
@@ -266,7 +245,7 @@ This package contains the runtime libraries for KSquirrel.
 %{tde_libdir}/ksquirrel-libs/libkls_tga.so.0.8.0
 %{tde_libdir}/ksquirrel-libs/libkls_tiff.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_tiff.so.0.8.0
-%if 0%{?with_freetype}
+%if %{with freetype}
 %{tde_libdir}/ksquirrel-libs/libkls_ttf.so.0
 %{tde_libdir}/ksquirrel-libs/libkls_ttf.so.0.8.0
 %endif
@@ -296,10 +275,10 @@ This package contains the runtime libraries for KSquirrel.
 %{tde_libdir}/libksquirrel-libs.so.0.8.0
 %dir %{tde_datadir}/ksquirrel-libs
 %{tde_datadir}/ksquirrel-libs/libkls_camera.so.ui
-%if 0%{?with_djvu}
+%if %{with djvu}
 %{tde_datadir}/ksquirrel-libs/libkls_djvu.so.ui
 %endif
-%if 0%{?with_svg}
+%if %{with svg}
 %{tde_datadir}/ksquirrel-libs/libkls_svg.so.ui
 %endif
 %{tde_datadir}/ksquirrel-libs/libkls_tiff.so.ui
@@ -354,15 +333,15 @@ This package contains the development libraries for KSquirrel.
 %{tde_libdir}/ksquirrel-libs/libkls_cut.so
 %{tde_libdir}/ksquirrel-libs/libkls_dds.la
 %{tde_libdir}/ksquirrel-libs/libkls_dds.so
-%if 0%{?with_xmedcon}
+%if %{with xmedcon}
 %{tde_libdir}/ksquirrel-libs/libkls_dicom.la
 %{tde_libdir}/ksquirrel-libs/libkls_dicom.so
 %endif
-%if 0%{?with_djvu}
+%if %{with djvu}
 %{tde_libdir}/ksquirrel-libs/libkls_djvu.la
 %{tde_libdir}/ksquirrel-libs/libkls_djvu.so
 %endif
-%if 0%{?with_ghostscript}
+%if %{with ghostscript}
 %{tde_libdir}/ksquirrel-libs/libkls_eps.la
 %{tde_libdir}/ksquirrel-libs/libkls_eps.so
 %endif
@@ -412,6 +391,8 @@ This package contains the development libraries for KSquirrel.
 %{tde_libdir}/ksquirrel-libs/libkls_pi1.so
 %{tde_libdir}/ksquirrel-libs/libkls_pi3.la
 %{tde_libdir}/ksquirrel-libs/libkls_pi3.so
+%{tde_libdir}/ksquirrel-libs/libkls_pict.so
+%{tde_libdir}/ksquirrel-libs/libkls_pict.la
 %{tde_libdir}/ksquirrel-libs/libkls_pix.la
 %{tde_libdir}/ksquirrel-libs/libkls_pix.so
 %{tde_libdir}/ksquirrel-libs/libkls_png.la
@@ -434,7 +415,7 @@ This package contains the development libraries for KSquirrel.
 %{tde_libdir}/ksquirrel-libs/libkls_sgi.so
 %{tde_libdir}/ksquirrel-libs/libkls_sun.la
 %{tde_libdir}/ksquirrel-libs/libkls_sun.so
-%if 0%{?with_svg}
+%if %{with svg}
 %{tde_libdir}/ksquirrel-libs/libkls_svg.la
 %{tde_libdir}/ksquirrel-libs/libkls_svg.so
 %endif
@@ -442,7 +423,7 @@ This package contains the development libraries for KSquirrel.
 %{tde_libdir}/ksquirrel-libs/libkls_tga.so
 %{tde_libdir}/ksquirrel-libs/libkls_tiff.la
 %{tde_libdir}/ksquirrel-libs/libkls_tiff.so
-%if 0%{?with_freetype}
+%if %{with freetype}
 %{tde_libdir}/ksquirrel-libs/libkls_ttf.la
 %{tde_libdir}/ksquirrel-libs/libkls_ttf.so
 %endif
@@ -487,7 +468,7 @@ This package contains the tools for KSquirrel.
 %defattr(-,root,root,-)
 %{tde_bindir}/ksquirrel-libs-camera2ppm
 %{tde_bindir}/ksquirrel-libs-dcraw
-%if 0%{?with_xmedcon}
+%if %{with xmedcon}
 %{tde_bindir}/ksquirrel-libs-dicom2png
 %endif
 %{tde_bindir}/ksquirrel-libs-fig2ppm
@@ -499,71 +480,19 @@ This package contains the tools for KSquirrel.
 %{tde_bindir}/ksquirrel-libs-neo2ppm
 %{tde_bindir}/ksquirrel-libs-pi12ppm
 %{tde_bindir}/ksquirrel-libs-pi32ppm
-%if 0%{?with_svg}
+%{tde_bindir}/ksquirrel-libs-pict2ppm
+%if %{with svg}
 %{tde_bindir}/ksquirrel-libs-svg2png
 %endif
-%if 0%{?with_freetype}
+%if %{with freetype}
 %{tde_bindir}/ksquirrel-libs-ttf2pnm
 %endif
 %{tde_bindir}/ksquirrel-libs-utah2ppm
 %{tde_bindir}/ksquirrel-libs-xcf2pnm
 %{tde_bindir}/ksquirrel-libs-xim2ppm
 
-##########
-
-%if 0%{?suse_version} && 0%{?opensuse_bs} == 0
-%debug_package
-%endif
-
-##########
-
-%prep
-%autosetup -n %{tarball_name}-%{tde_version}%{?preversion:~%{preversion}}
-
-# FIXME: under PCLinuxOS, headers are under 'freetype2' not 'freetype'
-if [ -r /usr/include/freetype2/ftbitmap.h ]; then
-  %__sed -i "configure.ac" -e "s|freetype/ftbitmap.h|freetype2/ftbitmap.h|"
-  %__sed -i "kernel/kls_ttf/ttf2pnm.cpp" -e "s|freetype/config/|freetype2/config/|"
-fi
-
-
-%build
+%conf -p
 unset QTDIR QTINC QTLIB
 export PATH="%{tde_bindir}:${PATH}"
 export PKG_CONFIG_PATH="%{tde_libdir}/pkgconfig"
-
-if ! rpm -E %%cmake|grep -e 'cd build\|cd ${CMAKE_BUILD_DIR:-build}'; then
-  %__mkdir_p build
-  cd build
-fi
-
-%cmake \
-  -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
-  -DCMAKE_C_FLAGS="${RPM_OPT_FLAGS}" \
-  -DCMAKE_CXX_FLAGS="${RPM_OPT_FLAGS}" \
-  -DCMAKE_SKIP_RPATH=OFF \
-  -DCMAKE_SKIP_INSTALL_RPATH=OFF \
-  -DCMAKE_INSTALL_RPATH="%{tde_libdir}" \
-  -DCMAKE_VERBOSE_MAKEFILE=ON \
-  -DWITH_GCC_VISIBILITY=OFF \
-  \
-  -DCMAKE_INSTALL_PREFIX="%{tde_prefix}" \
-  -DSHARE_INSTALL_PREFIX="%{tde_datadir}" \
-  -DINCLUDE_INSTALL_DIR="%{tde_includedir}" \
-  -DLIB_INSTALL_DIR="%{tde_libdir}" \
-  \
-  -DWITH_ALL_OPTIONS=ON \
-  -DWITH_GCC_VISIBILITY=ON \
-  \
-  -DBUILD_ALL=ON \
-  -DBUILD_DICOM=OFF \
-  -DBUILD_PICT=OFF \
-  ..
-
-%__make %{?_smp_mflags} || %__make
-
-
-%install
-export PATH="%{tde_bindir}:${PATH}"
-%__make -C build install DESTDIR=%{buildroot}
 
