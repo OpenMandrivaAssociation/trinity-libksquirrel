@@ -5,6 +5,7 @@
 %bcond svg 1
 %bcond jasper 1
 %bcond freetype 1
+%bcond pict 0
 
 # BUILD WARNING:
 #  Remove qt-devel and qt3-devel and any kde*-devel on your system !
@@ -58,7 +59,7 @@ BuildOption:    -DSHARE_INSTALL_PREFIX="%{prefix}/share"
 BuildOption:    -DINCLUDE_INSTALL_DIR="%{prefix}/include"
 BuildOption:    -DLIB_INSTALL_DIR="%{prefix}/%{_lib}"
 BuildOption:    -DWITH_ALL_OPTIONS=ON -DBUILD_ALL=ON -DBUILD_DICOM=OFF
-BuildOption:    -DBUILD_PICT=OFF
+BuildOption:    -DBUILD_PICT=%{!?with_pict:OFF}%{?with_pict:ON}
 BuildOption:    -DWITH_GCC_VISIBILITY=%{!?with_clang:ON}%{?with_clang:OFF}
 
 
@@ -203,8 +204,10 @@ This package contains the runtime libraries for KSquirrel.
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pi1.so.0.8.0
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pi3.so.0
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pi3.so.0.8.0
+%if %{with pict}
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pict.so.0
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pict.so.0.8.0
+%endif
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pix.so.0
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pix.so.0.8.0
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_png.so.0
@@ -381,8 +384,10 @@ This package contains the development libraries for KSquirrel.
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pi1.so
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pi3.la
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pi3.so
+%if %{with pict}
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pict.so
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pict.la
+%endif
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pix.la
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_pix.so
 %{prefix}/%{_lib}/ksquirrel-libs/libkls_png.la
@@ -456,33 +461,35 @@ This package contains the tools for KSquirrel.
 
 %files tools
 %defattr(-,root,root,-)
-%{tde_bindir}/ksquirrel-libs-camera2ppm
-%{tde_bindir}/ksquirrel-libs-dcraw
+%{prefix}/bin/ksquirrel-libs-camera2ppm
+%{prefix}/bin/ksquirrel-libs-dcraw
 %if %{with xmedcon}
-%{tde_bindir}/ksquirrel-libs-dicom2png
+%{prefix}/bin/ksquirrel-libs-dicom2png
 %endif
-%{tde_bindir}/ksquirrel-libs-fig2ppm
-%{tde_bindir}/ksquirrel-libs-iff2ppm
-%{tde_bindir}/ksquirrel-libs-leaf2ppm
-%{tde_bindir}/ksquirrel-libs-ljpeg2ppm
-%{tde_bindir}/ksquirrel-libs-ljpeg2ppm-s
-%{tde_bindir}/ksquirrel-libs-mac2ppm
-%{tde_bindir}/ksquirrel-libs-neo2ppm
-%{tde_bindir}/ksquirrel-libs-pi12ppm
-%{tde_bindir}/ksquirrel-libs-pi32ppm
-%{tde_bindir}/ksquirrel-libs-pict2ppm
+%{prefix}/bin/ksquirrel-libs-fig2ppm
+%{prefix}/bin/ksquirrel-libs-iff2ppm
+%{prefix}/bin/ksquirrel-libs-leaf2ppm
+%{prefix}/bin/ksquirrel-libs-ljpeg2ppm
+%{prefix}/bin/ksquirrel-libs-ljpeg2ppm-s
+%{prefix}/bin/ksquirrel-libs-mac2ppm
+%{prefix}/bin/ksquirrel-libs-neo2ppm
+%{prefix}/bin/ksquirrel-libs-pi12ppm
+%{prefix}/bin/ksquirrel-libs-pi32ppm
+%if %{with pict}
+%{prefix}/bin/ksquirrel-libs-pict2ppm
+%endif
 %if %{with svg}
-%{tde_bindir}/ksquirrel-libs-svg2png
+%{prefix}/bin/ksquirrel-libs-svg2png
 %endif
 %if %{with freetype}
-%{tde_bindir}/ksquirrel-libs-ttf2pnm
+%{prefix}/bin/ksquirrel-libs-ttf2pnm
 %endif
-%{tde_bindir}/ksquirrel-libs-utah2ppm
-%{tde_bindir}/ksquirrel-libs-xcf2pnm
-%{tde_bindir}/ksquirrel-libs-xim2ppm
+%{prefix}/bin/ksquirrel-libs-utah2ppm
+%{prefix}/bin/ksquirrel-libs-xcf2pnm
+%{prefix}/bin/ksquirrel-libs-xim2ppm
 
 %conf -p
 unset QTDIR QTINC QTLIB
-export PATH="%{tde_bindir}:${PATH}"
+export PATH="%{prefix}/bin:${PATH}"
 export PKG_CONFIG_PATH="%{prefix}/%{_lib}/pkgconfig"
 
