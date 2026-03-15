@@ -286,7 +286,7 @@ This package contains the runtime libraries for KSquirrel.
 %package devel
 Group:		Development/Libraries/Other
 Summary:	Trinity image viewer
-Requires:	%{name} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires:	%{name} = %{EVRD}
 
 %description devel
 This package contains the development libraries for KSquirrel.
@@ -440,7 +440,7 @@ This package contains the development libraries for KSquirrel.
 %package tools
 Summary:	Trinity image viewer
 Group:		System/Libraries
-Requires:	%{name} = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires:	%{name} = %{EVRD}
 
 %description tools
 This package contains the tools for KSquirrel.
@@ -477,5 +477,4 @@ This package contains the tools for KSquirrel.
 %conf -p
 unset QTDIR QTINC QTLIB
 export PATH="%{tde_prefix}/bin:${PATH}"
-export PKG_CONFIG_PATH="%{tde_prefix}/%{_lib}/pkgconfig"
 
