@@ -7,16 +7,11 @@
 %bcond freetype 1
 %bcond pict 0
 
-# BUILD WARNING:
-#  Remove qt-devel and qt3-devel and any kde*-devel on your system !
-#  Having KDE libraries may cause FTBFS here !
-
 # TDE variables
 %define tde_epoch 2
 %if "%{?tde_version}" == ""
 %define tde_version 14.1.5
 %endif
-%define pkg_rel 5
 
 %define tde_pkg libksquirrel
 
@@ -35,15 +30,14 @@
 Name:		trinity-%{tde_pkg}
 Epoch:		%{tde_epoch}
 Version:	0.8.0
-Release:	%{?tde_version}_%{?!preversion:%{pkg_rel}}%{?preversion:0_%{preversion}}%{?dist}
+Release:	%{?tde_version:%{tde_version}_}6
 Summary:	Trinity image viewer
 Group:		System/Libraries
 URL:		http://www.trinitydesktop.org/
 
 License:	GPLv2+
 
-
-Source0:	https://mirror.ppa.trinitydesktop.org/trinity/releases/R%{tde_version}/main/libraries/%{tarball_name}-%{tde_version}%{?preversion:~%{preversion}}.tar.xz
+Source0:	https://mirror.ppa.trinitydesktop.org/trinity/releases/R%{tde_version}/main/libraries/%{tarball_name}-%{tde_version}.tar.xz
 Source1:	%{name}-rpmlintrc
 
 BuildSystem:    cmake
@@ -54,7 +48,6 @@ BuildOption:    -DINCLUDE_INSTALL_DIR=%{tde_prefix}/include
 BuildOption:    -DWITH_ALL_OPTIONS=ON -DBUILD_ALL=ON -DBUILD_DICOM=OFF
 BuildOption:    -DBUILD_PICT=%{!?with_pict:OFF}%{?with_pict:ON}
 BuildOption:    -DWITH_GCC_VISIBILITY=%{!?with_clang:ON}%{?with_clang:OFF}
-
 
 BuildRequires:	trinity-tdelibs-devel >= %{tde_version}
 
