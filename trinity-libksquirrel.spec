@@ -48,6 +48,8 @@ BuildOption:    -DBUILD_PICT=%{!?with_pict:OFF}%{?with_pict:ON}
 BuildOption:    -DWITH_GCC_VISIBILITY=%{!?with_clang:ON}%{?with_clang:OFF}
 
 BuildRequires:	trinity-tdelibs-devel >= %{tde_version}
+BuildRequires:  trinity-tde-cmake >= %{tde_version}
+BuildRequires:  tqt3-dev-tools
 
 BuildRequires:	desktop-file-utils
 
