@@ -28,7 +28,7 @@
 
 Name:		trinity-%{tde_pkg}
 Version:	0.8.0
-Release:	%{?tde_version:%{tde_version}_}6
+Release:	%{?tde_version:%{tde_version}_}7
 Summary:	Trinity image viewer
 Group:		System/Libraries
 URL:		http://www.trinitydesktop.org/
@@ -49,7 +49,6 @@ BuildOption:    -DWITH_GCC_VISIBILITY=%{!?with_clang:ON}%{?with_clang:OFF}
 
 BuildRequires:	trinity-tdelibs-devel >= %{tde_version}
 BuildRequires:  trinity-tde-cmake >= %{tde_version}
-BuildRequires:  tqt3-dev-tools
 
 BuildRequires:	desktop-file-utils
 
