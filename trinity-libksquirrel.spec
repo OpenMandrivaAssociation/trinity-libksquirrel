@@ -8,10 +8,6 @@
 %bcond pict 0
 
 # TDE variables
-%if "%{?tde_version}" == ""
-%define tde_version 14.1.5
-%endif
-
 %define tde_pkg libksquirrel
 
 %define tde_prefix /opt/trinity
@@ -21,21 +17,21 @@
 %define _disable_rebuild_configure 1
 
 # fixes error: Empty %files file …/debugsourcefiles.list
-%define _debugsource_template %{nil}
+%undefine _debugsource_template
 
 %define tarball_name %{tde_pkg}-trinity
 
 
 Name:		trinity-%{tde_pkg}
-Version:	0.8.0
-Release:	%{?tde_version:%{tde_version}_}7
+Version:	14.1.6
+Release:	1
 Summary:	Trinity image viewer
 Group:		System/Libraries
 URL:		http://www.trinitydesktop.org/
 
 License:	GPLv2+
 
-Source0:	https://mirror.ppa.trinitydesktop.org/trinity/releases/R%{tde_version}/main/libraries/%{tarball_name}-%{tde_version}.tar.xz
+Source0:	https://mirror.ppa.trinitydesktop.org/trinity/releases/R%{version}/main/libraries/%{tarball_name}-%{version}.tar.xz
 Source1:	%{name}-rpmlintrc
 
 BuildSystem:    cmake
@@ -47,8 +43,8 @@ BuildOption:    -DWITH_ALL_OPTIONS=ON -DBUILD_ALL=ON -DBUILD_DICOM=OFF
 BuildOption:    -DBUILD_PICT=%{!?with_pict:OFF}%{?with_pict:ON}
 BuildOption:    -DWITH_GCC_VISIBILITY=%{!?with_clang:ON}%{?with_clang:OFF}
 
-BuildRequires:	trinity-tdelibs-devel >= %{tde_version}
-BuildRequires:  trinity-tde-cmake >= %{tde_version}
+BuildRequires:	trinity-tdelibs-devel >= %{version}
+BuildRequires:  trinity-tde-cmake >= %{version}
 
 BuildRequires:	desktop-file-utils
 
